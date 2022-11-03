@@ -7,12 +7,13 @@ public class EnemyAI : MonoBehaviour
 {
     // variaveis da state machine
     private enum State { 
-        patrolling, 
+        patrolling,
+        detecting,
         chasing,
         resetting}
 
     private State state;
-  
+    private GameController gameController;
     // variaveis da movimentação
     NavMeshAgent agent;
     public Transform[] waypoints;
@@ -40,7 +41,10 @@ public class EnemyAI : MonoBehaviour
     public LayerMask obstructionMask;
 
     public bool canSeePlayer;
-    
+
+    // outras variáveis da IA
+    public float detectionTime = 2f;
+    bool detectedPlayer = false;
 
     private void Awake()
     {
@@ -49,6 +53,7 @@ public class EnemyAI : MonoBehaviour
 
     void Start()
     {
+        gameController = FindObjectOfType<GameController>();
         // Inicia as funções do fov
         playerRef = GameObject.FindGameObjectWithTag("Player");
         StartCoroutine(FOVRoutine());
@@ -69,6 +74,7 @@ public class EnemyAI : MonoBehaviour
         {
             
             case State.chasing:
+                agent.speed = 5;
                 if (!canSeePlayer)
                 {
                     state = State.resetting;
@@ -79,17 +85,39 @@ public class EnemyAI : MonoBehaviour
             case State.resetting:
                 if (!resetStarted)
                 {
+                    // aqui também precisa de uma função que passe pelo game controller
                     resetStarted = true;
                     StartCoroutine(ResetPattern());
                     
                 }
                 break;
+            case State.detecting:
+                agent.speed = 1;
+                // precisa virar o inimigo uma vez na direção do player também
+                if (canSeePlayer && !detectedPlayer)
+                {
+                    detectionTime -= Time.deltaTime;
+                    if (detectionTime <= 0)
+                    {
+                        detectedPlayer = true;
+                        // chama todos inimigos ao mesmo tempo
+                        gameController.ChasePlayer();
+                    }
+                }
+                else
+                {
+                    detectionTime = 2f;
+                    state = State.patrolling;
+                }
+                
+                break; 
 
             default:
             case State.patrolling:
+                agent.speed = 3.5f;
                 if (canSeePlayer)
                 {
-                    state = State.chasing;
+                    state = State.detecting;
                 }
                 if (Vector3.Distance(transform.position, target) < 1)
                 {
@@ -129,11 +157,15 @@ public class EnemyAI : MonoBehaviour
         state = State.patrolling;
         agent.isStopped = false;
         UpdateDestination();
+        detectedPlayer = false;
         resetStarted = false;
         
     }
 
-    
+    public void StartChasing()
+    {
+        state = State.chasing;
+    }
 
     //códigos do fov
     private IEnumerator FOVRoutine()
