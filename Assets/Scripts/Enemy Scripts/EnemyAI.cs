@@ -6,25 +6,27 @@ using System;
 public class EnemyAI : MonoBehaviour
 {
     // variaveis da state machine
-    private enum State { 
+    public enum State { 
         patrolling,
         detecting,
         chasing,
         resetting}
 
-    private State state;
+    public State state;
     private GameController gameController;
+
     // variaveis da movimentação
     NavMeshAgent agent;
     public Transform[] waypoints;
     int waypointIndex;
     Vector3 target;
     public GameObject player;
+    Vector3 playerPosition;
 
     // variaveis do padrão de reset de patrulha
     public float resetTimer;
     public float breakTimer = 1;
-    bool resetStarted;
+    public bool resetStarted;
 
     // eventos
     
@@ -35,7 +37,8 @@ public class EnemyAI : MonoBehaviour
     [Range(0, 360)]
     public float angle;
 
-    public GameObject playerRef;
+    public PlayerController playerController;
+    
 
     public LayerMask targetMask;
     public LayerMask obstructionMask;
@@ -48,6 +51,7 @@ public class EnemyAI : MonoBehaviour
 
     private void Awake()
     {
+        playerController = FindObjectOfType<PlayerController>();
         state = State.patrolling;
     }
 
@@ -55,7 +59,7 @@ public class EnemyAI : MonoBehaviour
     {
         gameController = FindObjectOfType<GameController>();
         // Inicia as funções do fov
-        playerRef = GameObject.FindGameObjectWithTag("Player");
+        player = GameObject.FindGameObjectWithTag("Player");
         StartCoroutine(FOVRoutine());
 
         // Inicia pathfinding da movimentação
@@ -64,22 +68,33 @@ public class EnemyAI : MonoBehaviour
 
         // Quando a StateMachine estiver implementada, trocar isso aqui pra entrada do state Roaming
         UpdateDestination();
+
     }
 
     
 
     void Update()
     {
+        playerPosition = player.transform.position;
+
         switch (state)
         {
             
             case State.chasing:
                 agent.speed = 5;
-                if (!canSeePlayer)
+
+                agent.SetDestination(player.transform.position);
+
+                if (gameController.seeingPlayer == false)
                 {
+                    Debug.Log("missing player");
                     state = State.resetting;
                 }
-                agent.SetDestination(player.transform.position);
+                else
+                {
+                    
+                }
+
                 break;
 
             case State.resetting:
@@ -87,11 +102,12 @@ public class EnemyAI : MonoBehaviour
                 {
                     // aqui também precisa de uma função que passe pelo game controller
                     resetStarted = true;
-                    StartCoroutine(ResetPattern());
+                    ResetPattern();
                     
                 }
                 break;
             case State.detecting:
+                
                 agent.speed = 1;
                 // precisa virar o inimigo uma vez na direção do player também
                 if (canSeePlayer && !detectedPlayer)
@@ -100,8 +116,10 @@ public class EnemyAI : MonoBehaviour
                     if (detectionTime <= 0)
                     {
                         detectedPlayer = true;
+                        detectionTime = 2f;
                         // chama todos inimigos ao mesmo tempo
                         gameController.ChasePlayer();
+                        
                     }
                 }
                 else
@@ -119,6 +137,7 @@ public class EnemyAI : MonoBehaviour
                 {
                     state = State.detecting;
                 }
+
                 if (Vector3.Distance(transform.position, target) < 1)
                 {
                     IterateWaypointIndex();
@@ -149,13 +168,10 @@ public class EnemyAI : MonoBehaviour
     }
 
     //código de resetar o padrão de patrulha ao perder o player de vista
-    IEnumerator ResetPattern()
+    private void ResetPattern()
     {
-        yield return new WaitForSeconds(resetTimer);
-        agent.isStopped = true;
-        yield return new WaitForSeconds(breakTimer);
+        
         state = State.patrolling;
-        agent.isStopped = false;
         UpdateDestination();
         detectedPlayer = false;
         resetStarted = false;
@@ -179,6 +195,12 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    public void AttackPlayer()
+    {
+        agent.SetDestination(transform.position);
+        transform.LookAt(playerPosition);
+    }
+
     public void FieldOfViewCheck()
     {
         Collider[] rangeChecks = Physics.OverlapSphere(transform.position, radius, targetMask);
@@ -192,7 +214,7 @@ public class EnemyAI : MonoBehaviour
             {
                 float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-                if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
+                if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask) && playerController.playerVisible == true)
                     canSeePlayer = true;
                 else
                     canSeePlayer = false;

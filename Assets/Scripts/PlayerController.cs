@@ -7,7 +7,9 @@ public class PlayerController : MonoBehaviour
     public static PlayerController instance;
     public CharacterController controller;
     public float speed = 6;
+    public bool playerVisible = true;
 
+    
     private void Awake()
     {
         instance = this;

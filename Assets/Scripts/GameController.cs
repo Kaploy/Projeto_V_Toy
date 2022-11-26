@@ -4,35 +4,59 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    public List<EnemyAI> enemies = new List<EnemyAI>();
-    public GameObject enemy;
-    
+    public EnemyAI[] enemies;
+    public bool seeingPlayer;
     public StateMachine<GameController> StateMachine { get; private set; }
 
+
+    private void Awake()
+    {
+        enemies = FindObjectsOfType<EnemyAI>();
+    }
     private void Start()
     {
+
         
-        StateMachine = new StateMachine<GameController>(this);
-        StateMachine.ChangeState(FreeRoamState.instance);
+        //StateMachine = new StateMachine<GameController>(this);
+        //tateMachine.ChangeState(FreeRoamState.instance);
+
+
+
     }
 
     private void Update()
     {
-        StateMachine.Execute();
+        seeingPlayer = EnemiesSeeingPlayer();
     }
+
+    private bool EnemiesSeeingPlayer()
+    {
+        foreach (EnemyAI enemy in enemies)
+        {
+            if (enemy.canSeePlayer == true)
+            {
+
+                return true;
+            }
+
+        } 
+        return false;
+        
+    }
+
+    
+
 
     // talvez mover isso para outro código "Enemy Manager" ou "Enemy Controller"
     public void ChasePlayer()
     {
-        Debug.Log("Chasing player");
+        
 
-        foreach (GameObject enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+        foreach (EnemyAI enemy in enemies)
         {
-            if(enemy != null)
-            {
-                enemy.GetComponent<EnemyAI>().StartChasing();
-            }
-              
+            enemy.StartChasing();    
         }
     }
+
+    
 }
