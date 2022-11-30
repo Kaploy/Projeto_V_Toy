@@ -53,13 +53,14 @@ public class EnemyAI : MonoBehaviour
     {
         playerController = FindObjectOfType<PlayerController>();
         state = State.patrolling;
+        
     }
 
     void Start()
     {
         gameController = FindObjectOfType<GameController>();
         // Inicia as funções do fov
-        player = GameObject.FindGameObjectWithTag("Player");
+        
         StartCoroutine(FOVRoutine());
 
         // Inicia pathfinding da movimentação
@@ -75,7 +76,7 @@ public class EnemyAI : MonoBehaviour
 
     void Update()
     {
-        playerPosition = player.transform.position;
+        playerPosition = playerController.transform.position;
 
         switch (state)
         {
@@ -83,7 +84,7 @@ public class EnemyAI : MonoBehaviour
             case State.chasing:
                 agent.speed = 5;
 
-                agent.SetDestination(player.transform.position);
+                agent.SetDestination(playerController.transform.position);
 
                 if (gameController.seeingPlayer == false)
                 {
@@ -110,23 +111,7 @@ public class EnemyAI : MonoBehaviour
                 
                 agent.speed = 1;
                 // precisa virar o inimigo uma vez na direção do player também
-                if (canSeePlayer && !detectedPlayer)
-                {
-                    detectionTime -= Time.deltaTime;
-                    if (detectionTime <= 0)
-                    {
-                        detectedPlayer = true;
-                        detectionTime = 2f;
-                        // chama todos inimigos ao mesmo tempo
-                        gameController.ChasePlayer();
-                        
-                    }
-                }
-                else
-                {
-                    detectionTime = 2f;
-                    state = State.patrolling;
-                }
+                DetectionPattern();
                 
                 break; 
 
@@ -167,6 +152,26 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    void DetectionPattern()
+    {
+        if (canSeePlayer && !detectedPlayer)
+        {
+            detectionTime -= Time.deltaTime;
+            if (detectionTime <= 0)
+            {
+                detectedPlayer = true;
+                detectionTime = 2f;
+                // chama todos inimigos ao mesmo tempo
+                gameController.ChasePlayer();
+
+            }
+        }
+        else
+        {
+            detectionTime = 2f;
+            state = State.patrolling;
+        }
+    }
     //código de resetar o padrão de patrulha ao perder o player de vista
     private void ResetPattern()
     {
