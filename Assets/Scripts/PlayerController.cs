@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -20,7 +21,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundMask;
     private Camera mainCamera;
 
-    //Variáveis do ataque
+    //Variáveis de combate
+    public float playerHP = 10;
     public Transform swordBase;
     public Transform swordPoint;
     public float attackRange;
@@ -40,6 +42,12 @@ public class PlayerController : MonoBehaviour
     
     public void Update()
     {
+        if(playerHP <= 0)
+        {
+            Destroy(gameObject);
+
+        }
+
         switch (playerState)
         {
             case State.attacking:
@@ -65,10 +73,13 @@ public class PlayerController : MonoBehaviour
         float vertical = Input.GetAxisRaw("Vertical");
         Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
 
-        if (direction.magnitude >= 0.1f)
+        var matrix = Matrix4x4.Rotate(Quaternion.Euler(0, 45, 0));
+        var correctedDirection = matrix.MultiplyPoint3x4(direction);
+
+        if (direction != Vector3.zero)
         {
-            controller.Move(direction * speed * Time.deltaTime);
-            transform.forward = direction;
+            controller.Move(correctedDirection * speed * Time.deltaTime);
+            transform.forward = correctedDirection;
             playerAnimator.SetBool("moving", true);
         }
         else
@@ -82,6 +93,7 @@ public class PlayerController : MonoBehaviour
         {
 
             playerAnimator.SetTrigger("attack");
+
             //var faceDirection = position - transform.position;
             
             //transform.forward = faceDirection;
@@ -105,8 +117,23 @@ public class PlayerController : MonoBehaviour
         Collider[] hitEnemies = Physics.OverlapCapsule(swordBase.position, swordPoint.position, attackRange, enemyLayer);
         foreach (Collider enemy in hitEnemies)
         {
-            Debug.Log("Hit enemy!");
+            enemy.GetComponent<EnemyAI>().TakeDamage();
         }
+    }
+
+    public void TakeDamage()
+    {
+        playerHP = -3f;
+    }
+
+    IEnumerable DeathRoutine()
+    {
+        Destroy(gameObject);
+
+        yield return new WaitForSeconds(3);
+        //MOVER ESSE CÓDIGO PARA O GAMECONTROLLER E REMOVER O SCENEMANAGER
+        SceneManager.LoadScene(0);
+
     }
 
     private void OnDrawGizmosSelected()

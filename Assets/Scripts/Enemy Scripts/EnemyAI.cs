@@ -10,7 +10,8 @@ public class EnemyAI : MonoBehaviour
         patrolling,
         detecting,
         chasing,
-        resetting}
+        resetting,
+        attacking}
 
     public State state;
     private GameController gameController;
@@ -22,37 +23,46 @@ public class EnemyAI : MonoBehaviour
     Vector3 target;
     public GameObject player;
     Vector3 playerPosition;
+    float patrolDistance;
 
     // variaveis do padrão de reset de patrulha
     public float resetTimer;
     public float breakTimer = 1;
     public bool resetStarted;
 
+    // variaveis da animação
+    Animator enemyAnimator;
+
     // eventos
     
 
     // variaveis do fov
-
     public float radius;
     [Range(0, 360)]
     public float angle;
-
     public PlayerController playerController;
-    
-
     public LayerMask targetMask;
     public LayerMask obstructionMask;
-
     public bool canSeePlayer;
+
+    //variáveis de combate
+    public float attackRange = 2f;
+    public float enemyHp = 10f;
+    public Transform weaponBase;
+    public Transform weaponPoint;
+    public LayerMask playerLayer;
 
     // outras variáveis da IA
     public float detectionTime = 2f;
     bool detectedPlayer = false;
+    public float chaseTime = 3f;
 
     private void Awake()
     {
         playerController = FindObjectOfType<PlayerController>();
+        enemyAnimator = GetComponent<Animator>();
         state = State.patrolling;
+        
         
     }
 
@@ -78,23 +88,26 @@ public class EnemyAI : MonoBehaviour
     {
         playerPosition = playerController.transform.position;
 
+        if (enemyHp <= 0)
+        {
+            Destroy(gameObject);
+        }
+
+
         switch (state)
         {
             
             case State.chasing:
                 agent.speed = 5;
 
-                agent.SetDestination(playerController.transform.position);
+                ChasePattern();
 
-                if (gameController.seeingPlayer == false)
-                {
-                    Debug.Log("missing player");
-                    state = State.resetting;
-                }
-                else
-                {
-                    
-                }
+                break;
+
+            case State.attacking:
+
+                EnemyAttack();
+
 
                 break;
 
@@ -117,7 +130,7 @@ public class EnemyAI : MonoBehaviour
 
             default:
             case State.patrolling:
-                agent.speed = 3.5f;
+                agent.speed = 2f;
                 if (canSeePlayer)
                 {
                     state = State.detecting;
@@ -129,7 +142,10 @@ public class EnemyAI : MonoBehaviour
                     UpdateDestination();
                 }
 
-                break;            
+                break;    
+                
+
+                
                 
         }
 
@@ -137,11 +153,88 @@ public class EnemyAI : MonoBehaviour
         
     }
 
+    void ChasePattern()
+    {
+        agent.SetDestination(playerController.transform.position);
+        enemyAnimator.SetInteger("currentStateNumber", 2);
+        patrolDistance = Vector3.Distance(playerController.transform.position, transform.position);
+
+        if (gameController.seeingPlayer == false)
+        {
+            chaseTime -= Time.deltaTime;
+            if(chaseTime <= 0f)
+            {
+                state = State.resetting;
+            }
+            
+        }
+        else
+        {
+            
+        }
+        
+        if(patrolDistance <= attackRange)
+        {
+            enemyAnimator.SetInteger("currentStateNumber", 3);
+        }
+    }
+
+    public void TakeDamage()
+    {
+        if(state == State.patrolling)
+        {
+            enemyHp =- 10f;
+        }
+        else if(state == State.attacking)
+        {
+            enemyHp =- 5f;
+        }
+        else
+        {
+            enemyHp =- 5f;
+            state = State.chasing;
+        }
+
+        
+    }
+
+    void EnemyAttack()
+    {
+        
+        Collider[] playerHit = Physics.OverlapCapsule(weaponBase.position, weaponPoint.position, attackRange, playerLayer);
+
+        foreach (Collider player in playerHit)
+        {
+            player.GetComponent<PlayerController>().TakeDamage();
+        }
+    }
+
+    void AttackStarted()
+    {
+        state = State.attacking;
+    }
+
+    void AttackEnded()
+    {   
+            state = State.chasing; 
+    }
     //códigos da movimentação de patrulha
     void UpdateDestination()
     {
         target = waypoints[waypointIndex].position;
+        transform.forward = target;
+        patrolDistance = Vector3.Distance(target, transform.position);
         agent.SetDestination(target);
+        
+        if(patrolDistance > 1f)
+        {
+            enemyAnimator.SetInteger("currentStateNumber", 1);
+        }
+        else
+        {
+            enemyAnimator.SetInteger("currentStateNumber", 0);
+        }
+
     }
     void IterateWaypointIndex()
     {
@@ -180,6 +273,7 @@ public class EnemyAI : MonoBehaviour
         UpdateDestination();
         detectedPlayer = false;
         resetStarted = false;
+        chaseTime = 3f;
         
     }
 
@@ -229,5 +323,10 @@ public class EnemyAI : MonoBehaviour
         }
         else if (canSeePlayer)
             canSeePlayer = false;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }

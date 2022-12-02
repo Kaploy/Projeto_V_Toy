@@ -15,7 +15,7 @@ public class ShadowBox : MonoBehaviour
 
     private void OnTriggerEnter(Collider playerCollider)
     {
-        Debug.Log("Player hidden");
+        
         playerController.playerVisible = false;
     }
 
