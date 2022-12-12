@@ -7,18 +7,21 @@ public class GameController : MonoBehaviour
     public EnemyAI[] enemies;
     public bool seeingPlayer;
     public StateMachine<GameController> StateMachine { get; private set; }
+    
 
+    //Variáveis da câmera
+    private Camera mainCamera;
+    private GameObject player;
+    public LayerMask wallsLayer;
 
     private void Awake()
     {
         enemies = FindObjectsOfType<EnemyAI>();
+        mainCamera = FindObjectOfType<Camera>();
+        player = GameObject.FindGameObjectWithTag("Player");
     }
     private void Start()
     {
-
-        
-        //StateMachine = new StateMachine<GameController>(this);
-        //tateMachine.ChangeState(FreeRoamState.instance);
 
 
 
@@ -26,6 +29,7 @@ public class GameController : MonoBehaviour
 
     private void Update()
     {
+        
         seeingPlayer = EnemiesSeeingPlayer();
     }
 
@@ -44,8 +48,21 @@ public class GameController : MonoBehaviour
         
     }
 
-    
+   /* void WallTransparency()
+    {
+        RaycastHit hit;
+        Ray ray = mainCamera.ScreenPointToRay(player.transform.position);
 
+        if (Physics.Raycast(ray, out hit, wallsLayer))
+        {
+            if (hit.collider != null)
+            {
+             
+            }
+    }
+
+    
+    */
 
     // talvez mover isso para outro código "Enemy Manager" ou "Enemy Controller"
     public void ChasePlayer()

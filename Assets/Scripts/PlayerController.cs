@@ -8,13 +8,15 @@ public class PlayerController : MonoBehaviour
     public enum State
     {
         freeroam,
-        attacking
+        attacking,
+        dodging,
+        takingdamage
     }
 
     public State playerState;
     public static PlayerController instance;
     public CharacterController controller;
-    public float speed = 6;
+    [SerializeField] float speed = 6;
     public bool playerVisible = true;
     public Animator playerAnimator;
 
@@ -22,11 +24,16 @@ public class PlayerController : MonoBehaviour
     private Camera mainCamera;
 
     //Variáveis de combate
-    public float playerHP = 10;
+    [SerializeField] float playerHP = 10;
     public Transform swordBase;
     public Transform swordPoint;
-    public float attackRange;
+    [SerializeField] float attackRange;
     public LayerMask enemyLayer;
+    public bool canBeDamaged = true;
+
+    //Outras variáveis
+
+    [SerializeField] float turnSpeed = 1000f;
 
     private void Awake()
     {
@@ -54,6 +61,18 @@ public class PlayerController : MonoBehaviour
 
                 AttackPattern();
 
+
+                break;
+
+            case State.dodging:
+                
+                //INFORMAÇÕES DA ANIMAÇÃO, CONTROLE DO "CANBEDAMAGED", CONTROLE DA STEALTH E MOVIMENTAÇÃO
+
+                break;
+
+            case State.takingdamage:
+
+                //INFORMAÇÕES DA ANIMAÇÃO, CONTROLE DO "CANBEDAMAGED", PARAR MOVIMENTAÇÃO
 
                 break;
             default:
@@ -91,16 +110,29 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-
+            LookAtMouse();
             playerAnimator.SetTrigger("attack");
 
-            //var faceDirection = position - transform.position;
-            
-            //transform.forward = faceDirection;
             
             
             
             
+            
+        }
+    }
+
+    private void LookAtMouse()
+    {
+        Plane playerPlane = new Plane(Vector3.up, transform.position);
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        float hitDist;
+
+        if(playerPlane.Raycast(ray, out hitDist))
+        {
+            Vector3 targetPoint = ray.GetPoint(hitDist);
+            Quaternion targetRotation = Quaternion.LookRotation(targetPoint - transform.position);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
+
         }
     }
 
@@ -123,7 +155,10 @@ public class PlayerController : MonoBehaviour
 
     public void TakeDamage()
     {
-        playerHP = -3f;
+        if (canBeDamaged)
+        {
+            playerHP = -3f;
+        }
     }
 
     IEnumerable DeathRoutine()
@@ -134,6 +169,11 @@ public class PlayerController : MonoBehaviour
         //MOVER ESSE CÓDIGO PARA O GAMECONTROLLER E REMOVER O SCENEMANAGER
         SceneManager.LoadScene(0);
 
+    }
+
+    private void DodgeRoll()
+    {
+        canBeDamaged = false;
     }
 
     private void OnDrawGizmosSelected()

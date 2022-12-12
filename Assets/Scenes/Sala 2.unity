@@ -1619,6 +1619,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemies: []
   seeingPlayer: 0
+  wallsLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!4 &1762290283
 Transform:
   m_ObjectHideFlags: 0
@@ -1694,6 +1697,10 @@ PrefabInstance:
     - target: {fileID: 612170804048180929, guid: 49d7d9af98ee7594eb1eeb1865269929, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 612170804048180941, guid: 49d7d9af98ee7594eb1eeb1865269929, type: 3}
+      propertyPath: turnSpeed
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 612170804048180943, guid: 49d7d9af98ee7594eb1eeb1865269929, type: 3}
       propertyPath: m_Name
