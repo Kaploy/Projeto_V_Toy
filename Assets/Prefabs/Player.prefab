@@ -212,12 +212,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerState: 0
   controller: {fileID: 612170804048180934}
-  speed: 6
   playerVisible: 1
   playerAnimator: {fileID: 612170804048180932}
   groundMask:
     serializedVersion: 2
     m_Bits: 1
+  dodgeTime: 0
+  dodgeSpeed: 0
+  speed: 6
   playerHP: 10
   swordBase: {fileID: 612170803965663981}
   swordPoint: {fileID: 612170804109134396}
@@ -225,6 +227,8 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 8
+  canBeDamaged: 1
+  turnSpeed: 1000
 --- !u!143 &612170804048180934
 CharacterController:
   m_ObjectHideFlags: 0
@@ -301,7 +305,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 612170804109134399}
   m_LocalRotation: {x: -0.73272866, y: -0.68051404, z: 0.0020900713, w: 0.0022504628}
-  m_LocalPosition: {x: -0.011, y: 0.03, z: -0.579}
+  m_LocalPosition: {x: -0.01, y: 0.03, z: -0.82}
   m_LocalScale: {x: 0.8834509, y: 1.288677, z: 0.85133564}
   m_ConstrainProportionsScale: 0
   m_Children: []

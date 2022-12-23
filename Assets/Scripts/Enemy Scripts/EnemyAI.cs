@@ -138,6 +138,9 @@ public class EnemyAI : MonoBehaviour
 
                 if (Vector3.Distance(transform.position, target) < 1)
                 {
+                    //Aqui sempre precisa ter o IterateWaypointIndex e o UpdateDestination de alguma maneira
+                    
+                    //PatrolBreak();
                     IterateWaypointIndex();
                     UpdateDestination();
                 }
@@ -243,6 +246,12 @@ public class EnemyAI : MonoBehaviour
         {
             waypointIndex = 0;
         }
+    }
+
+    IEnumerator PatrolBreak()
+    {
+        yield return new WaitForSeconds(2f);
+        
     }
 
     void DetectionPattern()

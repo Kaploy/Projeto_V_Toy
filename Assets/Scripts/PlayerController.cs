@@ -16,12 +16,18 @@ public class PlayerController : MonoBehaviour
     public State playerState;
     public static PlayerController instance;
     public CharacterController controller;
-    [SerializeField] float speed = 6;
+    
     public bool playerVisible = true;
     public Animator playerAnimator;
 
     [SerializeField] private LayerMask groundMask;
     private Camera mainCamera;
+
+    //Variáveis de movimento
+    public float dodgeTime;
+    [SerializeField] float dodgeSpeed;
+    [SerializeField] float speed = 6;
+    Vector3 targetPoint;
 
     //Variáveis de combate
     [SerializeField] float playerHP = 10;
@@ -112,13 +118,15 @@ public class PlayerController : MonoBehaviour
         {
             LookAtMouse();
             playerAnimator.SetTrigger("attack");
-
-            
-            
-            
-            
             
         }
+    
+        /*
+        if (Input.GetMouseButtonDown(1))
+        {
+            StartCoroutine(Dodge());
+        }
+        */
     }
 
     private void LookAtMouse()
@@ -161,7 +169,18 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    IEnumerable DeathRoutine()
+  /*  IEnumerator Dodge()
+    {
+        LookAtMouse();
+        canBeDamaged = false;
+
+        transform.Translate(Vector3.forward * dodgeSpeed);
+
+
+        yield return new WaitForSeconds(dodgeTime);
+    }*/
+
+    IEnumerator DeathRoutine()
     {
         Destroy(gameObject);
 
@@ -171,10 +190,7 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    private void DodgeRoll()
-    {
-        canBeDamaged = false;
-    }
+   
 
     private void OnDrawGizmosSelected()
     {
