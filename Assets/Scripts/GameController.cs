@@ -14,11 +14,15 @@ public class GameController : MonoBehaviour
     private GameObject player;
     public LayerMask wallsLayer;
 
+    //Variáveis do menu de pause
+    static bool gameIsPaused = false;
+
     private void Awake()
     {
         enemies = FindObjectsOfType<EnemyAI>();
         mainCamera = FindObjectOfType<Camera>();
         player = GameObject.FindGameObjectWithTag("Player");
+
     }
     private void Start()
     {
@@ -29,8 +33,8 @@ public class GameController : MonoBehaviour
 
     private void Update()
     {
-        
         seeingPlayer = EnemiesSeeingPlayer();
+        GamePauseLogic();
     }
 
     private bool EnemiesSeeingPlayer()
@@ -73,6 +77,33 @@ public class GameController : MonoBehaviour
         {
             enemy.StartChasing();    
         }
+    }
+
+    void GamePauseLogic()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (gameIsPaused)
+            {
+                Resume();
+            }
+            else
+            {
+                Pause();
+            }
+        }
+    }
+
+    void Resume()
+    {
+        Time.timeScale = 1f;
+        gameIsPaused = false;
+    }
+
+    void Pause()
+    {
+        Time.timeScale = 0f;
+        gameIsPaused = true;
     }
 
     

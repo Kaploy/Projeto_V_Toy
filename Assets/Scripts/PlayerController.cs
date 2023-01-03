@@ -121,7 +121,7 @@ public class PlayerController : MonoBehaviour
             
         }
     
-        /*
+      /*  
         if (Input.GetMouseButtonDown(1))
         {
             StartCoroutine(Dodge());
@@ -169,7 +169,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-  /*  IEnumerator Dodge()
+ /*IEnumerator Dodge()
     {
         LookAtMouse();
         canBeDamaged = false;
@@ -178,6 +178,8 @@ public class PlayerController : MonoBehaviour
 
 
         yield return new WaitForSeconds(dodgeTime);
+
+        canBeDamaged = true;
     }*/
 
     IEnumerator DeathRoutine()

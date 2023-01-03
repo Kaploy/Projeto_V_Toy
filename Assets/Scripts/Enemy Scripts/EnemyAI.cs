@@ -24,6 +24,7 @@ public class EnemyAI : MonoBehaviour
     public GameObject player;
     Vector3 playerPosition;
     float patrolDistance;
+    float idleTime = 1f;
 
     // variaveis do padrão de reset de patrulha
     public float resetTimer;
@@ -56,14 +57,18 @@ public class EnemyAI : MonoBehaviour
     public float detectionTime = 2f;
     bool detectedPlayer = false;
     public float chaseTime = 3f;
+    Collider playerCollider;
+
 
     private void Awake()
     {
         playerController = FindObjectOfType<PlayerController>();
         enemyAnimator = GetComponent<Animator>();
         state = State.patrolling;
-        
-        
+
+        //pega o colisor do player para funções de detecção
+        playerCollider = playerController.GetComponent<BoxCollider>();
+
     }
 
     void Start()
@@ -93,6 +98,7 @@ public class EnemyAI : MonoBehaviour
             Destroy(gameObject);
         }
 
+       
 
         switch (state)
         {
@@ -130,6 +136,7 @@ public class EnemyAI : MonoBehaviour
 
             default:
             case State.patrolling:
+                
                 agent.speed = 2f;
                 if (canSeePlayer)
                 {
@@ -140,11 +147,21 @@ public class EnemyAI : MonoBehaviour
                 {
                     //Aqui sempre precisa ter o IterateWaypointIndex e o UpdateDestination de alguma maneira
                     
-                    //PatrolBreak();
+                    StartCoroutine(PatrolBreak());
                     IterateWaypointIndex();
                     UpdateDestination();
                 }
 
+                //tornar isso aqui um método próprio ou colocar essas animações em uma BLEND TREE
+                if (!agent.isStopped)
+                {
+
+                    enemyAnimator.SetInteger("currentStateNumber", 1);
+                }
+                else
+                {
+                    enemyAnimator.SetInteger("currentStateNumber", 0);
+                }
                 break;    
                 
 
@@ -155,6 +172,33 @@ public class EnemyAI : MonoBehaviour
         
         
     }
+
+    //Se o player se aproximar demais, o inimigo ataca imediatamente: ESSE SISTEMA PRECISA SER MELHORADO E O BOX COLLIDER TEM QUE SER UM CONE
+
+    private void OnTriggerEnter(Collider playerCollider)
+    {
+
+       if(state == State.patrolling && playerController.playerVisible == true)
+        {
+            gameController.ChasePlayer();
+        }
+       else if(state == State.resetting)
+        {
+            gameController.ChasePlayer();
+        }
+        else if(state == State.detecting)
+        {
+            gameController.ChasePlayer();
+        }
+        else
+        {
+
+        }
+       
+    }
+
+    //padrões de cada state:
+
 
     void ChasePattern()
     {
@@ -226,17 +270,12 @@ public class EnemyAI : MonoBehaviour
     {
         target = waypoints[waypointIndex].position;
         transform.forward = target;
-        patrolDistance = Vector3.Distance(target, transform.position);
+        patrolDistance = Vector3.Distance(transform.position, waypoints[waypointIndex].position);
         agent.SetDestination(target);
         
-        if(patrolDistance > 1f)
-        {
-            enemyAnimator.SetInteger("currentStateNumber", 1);
-        }
-        else
-        {
-            enemyAnimator.SetInteger("currentStateNumber", 0);
-        }
+        
+        
+        
 
     }
     void IterateWaypointIndex()
@@ -250,8 +289,13 @@ public class EnemyAI : MonoBehaviour
 
     IEnumerator PatrolBreak()
     {
-        yield return new WaitForSeconds(2f);
+        agent.isStopped = true;
         
+        yield return new WaitForSeconds(idleTime);
+        agent.isStopped = false;
+        
+
+
     }
 
     void DetectionPattern()
