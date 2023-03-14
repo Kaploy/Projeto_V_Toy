@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/UI.unity
+    guid: 0c9b005d40b50cf41b111e1a5afccb3e
+  - enabled: 1
+    path: Assets/Scenes/Sala respawn.unity
+    guid: fb5b5e052869a9e428c961fba788bea8
+  - enabled: 1
     path: Assets/Scenes/Sala 1.unity
     guid: a1a5bc5f0054e184a822f615c35e6e58
   - enabled: 1

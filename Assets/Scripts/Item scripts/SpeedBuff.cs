@@ -10,5 +10,6 @@ public class SpeedBuff : PowerUpEffects
     public override void Apply(GameObject player)
     {
         player.GetComponent<PlayerController>().speed += speedIncrease;
+        player.GetComponent<TrailRenderer>().enabled = true;
     }
 }

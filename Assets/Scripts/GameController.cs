@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -16,20 +17,26 @@ public class GameController : MonoBehaviour
 
     //Variáveis do menu de pause
     static bool gameIsPaused = false;
+    public GameObject pauseMenuUI;
+
+    Scene scene;
+    private int sceneIndex;
 
     private void Awake()
     {
         enemies = FindObjectsOfType<EnemyAI>();
         mainCamera = FindObjectOfType<Camera>();
         player = GameObject.FindGameObjectWithTag("Player");
-
+        scene = SceneManager.GetActiveScene();
+        sceneIndex = scene.buildIndex;
+        
+        
     }
     private void Start()
     {
-
-
-
+        PlayerPrefs.SetInt("SavedLevel", sceneIndex);
     }
+
 
     private void Update()
     {
@@ -79,6 +86,9 @@ public class GameController : MonoBehaviour
         }
     }
 
+
+
+    //FUNÇÕES DO MENU DE PAUSE
     void GamePauseLogic()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -94,16 +104,28 @@ public class GameController : MonoBehaviour
         }
     }
 
-    void Resume()
+    public void Resume()
     {
+        pauseMenuUI.SetActive(false);
         Time.timeScale = 1f;
         gameIsPaused = false;
     }
 
     void Pause()
     {
+        pauseMenuUI.SetActive(true);
         Time.timeScale = 0f;
         gameIsPaused = true;
+    }
+
+    public void LoadMainMenu()
+    {
+        //SceneManager.LoadScene(0);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 
     

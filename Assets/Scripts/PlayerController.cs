@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     //Variáveis de movimento
     public float dodgeTime;
     [SerializeField] float dodgeSpeed;
-    [SerializeField] float speed = 6;
+    public float speed = 6;
     Vector3 targetPoint;
 
     //Variáveis de combate
@@ -36,6 +36,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float attackRange;
     public LayerMask enemyLayer;
     public bool canBeDamaged = true;
+    public float attackDamage;
 
     //Outras variáveis
 
@@ -65,7 +66,7 @@ public class PlayerController : MonoBehaviour
         {
             case State.attacking:
 
-                AttackPattern();
+                
 
 
                 break;
@@ -118,7 +119,8 @@ public class PlayerController : MonoBehaviour
         {
             LookAtMouse();
             playerAnimator.SetTrigger("attack");
-            
+            //AttackPattern();
+
         }
     
       /*  
@@ -146,27 +148,39 @@ public class PlayerController : MonoBehaviour
 
     public void StartAttacking()
     {
-        
+           
         playerState = State.attacking;
     }
 
-    public void AttackPattern()
+    public void AttackPattern(GameObject target)
     {
         
 
         Collider[] hitEnemies = Physics.OverlapCapsule(swordBase.position, swordPoint.position, attackRange, enemyLayer);
         foreach (Collider enemy in hitEnemies)
         {
-            enemy.GetComponent<EnemyAI>().TakeDamage();
+            enemy.GetComponent<EnemyAI>().TakeDamage(attackDamage);
         }
     }
 
-    public void TakeDamage()
+    public void TakeDamage(float damage)
     {
         if (canBeDamaged)
         {
-            playerHP = -3f;
+            playerHP = -damage;
         }
+        //playerAnimator.SetTrigger("damaged");
+    }
+
+    void DamageStart()
+    {
+        Debug.Log("damagestarted");
+        canBeDamaged = false;
+    }
+
+    void DamageEnded()
+    {
+        canBeDamaged = true;
     }
 
  /*IEnumerator Dodge()

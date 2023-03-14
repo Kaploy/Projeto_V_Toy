@@ -52,6 +52,7 @@ public class EnemyAI : MonoBehaviour
     public Transform weaponBase;
     public Transform weaponPoint;
     public LayerMask playerLayer;
+    public float attackDamage;
 
     // outras variáveis da IA
     public float detectionTime = 2f;
@@ -226,7 +227,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    public void TakeDamage()
+    public void TakeDamage(float damage)
     {
         if(state == State.patrolling)
         {
@@ -238,7 +239,7 @@ public class EnemyAI : MonoBehaviour
         }
         else
         {
-            enemyHp =- 5f;
+            enemyHp = -damage;
             state = State.chasing;
         }
 
@@ -252,7 +253,7 @@ public class EnemyAI : MonoBehaviour
 
         foreach (Collider player in playerHit)
         {
-            player.GetComponent<PlayerController>().TakeDamage();
+            //player.GetComponent<PlayerController>().TakeDamage(attackDamage);
         }
     }
 
@@ -263,13 +264,13 @@ public class EnemyAI : MonoBehaviour
 
     void AttackEnded()
     {   
+        //MUDAR AQUI PARA CONTINUAR ATACANDO SE O PLAYER ESTIVER NO ALCANCE
             state = State.chasing; 
     }
     //códigos da movimentação de patrulha
     void UpdateDestination()
     {
         target = waypoints[waypointIndex].position;
-        transform.forward = target;
         patrolDistance = Vector3.Distance(transform.position, waypoints[waypointIndex].position);
         agent.SetDestination(target);
         
